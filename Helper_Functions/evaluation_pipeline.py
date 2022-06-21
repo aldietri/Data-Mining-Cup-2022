@@ -153,12 +153,15 @@ def run_tuning(model, params, X_train_dec_sampled, y_train_dec_sampled, X_train_
     score_jan = compute_score(y_pred_jan, y_test_jan)
     overall_score = (score_dec + score_jan) / 2
 
-    return y_pred_dec, y_pred_jan, overall_score
+    return y_pred_dec, y_pred_jan, overall_score, estimator_jan
 
 
 def get_final_eval(X_train_dec, y_train_dec, X_train_jan, y_train_jan, path_to_data, model="lr", n_iter=5):
     X_test_dec, y_test_dec = get_test_data(X_train_dec, "dec", path_to_data)
     X_test_jan, y_test_jan = get_test_data(X_train_jan, "jan", path_to_data)
+
+    X_test_dec.fillna(0, inplace=True)
+    X_test_jan.fillna(0, inplace=True)
 
     #Sampling
     sampler = SMOTE(sampling_strategy="not majority", random_state=random_state)
@@ -208,17 +211,17 @@ def get_final_eval(X_train_dec, y_train_dec, X_train_jan, y_train_jan, path_to_d
     # The model for paramter tuning is selected by comparing their base scores.
     if model == "lr":
         print("Currently fitting Logistic Regression Model")
-        y_pred_dec_lr, y_pred_jan_lr, score_lr = run_tuning(lr, param_grid_lr, X_train_dec_sampled, y_train_dec_sampled, X_train_jan_sampled, y_train_jan_sampled, X_test_dec, y_test_dec, X_test_jan, y_test_jan, n_iter)
+        y_pred_dec_lr, y_pred_jan_lr, score_lr, model = run_tuning(lr, param_grid_lr, X_train_dec_sampled, y_train_dec_sampled, X_train_jan_sampled, y_train_jan_sampled, X_test_dec, y_test_dec, X_test_jan, y_test_jan, n_iter)
         print(f"Final score is: {score_lr}")
-        return y_pred_dec_lr, y_pred_jan_lr
+        return y_pred_dec_lr, y_pred_jan_lr, model
     elif model == "rf":
         print("Currently fitting Random Forest Model")
-        y_pred_dec_rf, y_pred_jan_rf, score_rf = run_tuning(rf, param_grid_rf, X_train_dec_sampled, y_train_dec_sampled, X_train_jan_sampled, y_train_jan_sampled, X_test_dec, y_test_dec, X_test_jan, y_test_jan, n_iter)
+        y_pred_dec_rf, y_pred_jan_rf, score_rf, model = run_tuning(rf, param_grid_rf, X_train_dec_sampled, y_train_dec_sampled, X_train_jan_sampled, y_train_jan_sampled, X_test_dec, y_test_dec, X_test_jan, y_test_jan, n_iter)
         print(f"Final score is: {score_rf}")
-        return y_pred_dec_rf, y_pred_jan_rf
+        return y_pred_dec_rf, y_pred_jan_rf, model
     elif model == "xgb":
         print("Currently fitting XGBoost Model")
-        y_pred_dec_xgb, y_pred_jan_xgb, score_xgb = run_tuning(xgb, param_grid_xgb, X_train_dec_sampled, y_train_dec_sampled, X_train_jan_sampled, y_train_jan_sampled, X_test_dec, y_test_dec, X_test_jan, y_test_jan, n_iter)
+        y_pred_dec_xgb, y_pred_jan_xgb, score_xgb, model = run_tuning(xgb, param_grid_xgb, X_train_dec_sampled, y_train_dec_sampled, X_train_jan_sampled, y_train_jan_sampled, X_test_dec, y_test_dec, X_test_jan, y_test_jan, n_iter)
         print(f"Final score is: {score_xgb}")
-        return y_pred_dec_xgb, y_pred_jan_xgb
+        return y_pred_dec_xgb, y_pred_jan_xgb, model
 
